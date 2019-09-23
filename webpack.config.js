@@ -11,7 +11,8 @@ module.exports = function(env, argv){
     plugins.push({
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap('AfterEmitPlugin', (compilation) => {
-          exec('cp -f lib/*.js /Users/yanqiong/Documents/shinny/shinny-futures-h5/lib/ && cp -f lib/*.js /Users/yanqiong/Documents/shinny/shinny-futures-web-alpha/node_modules/tqsdk/lib/',
+          // exec('cp -f lib/*.js /Users/yanqiong/Documents/shinny/shinny-futures-h5/lib/ && cp -f lib/*.js /Users/yanqiong/Documents/shinny/shinny-futures-web/node_modules/tqsdk/lib/',
+          exec('cp -f lib/*.js /Users/yanqiong/Documents/Github/hello-vue/node_modules/tqsdk/lib/',
             (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
@@ -22,7 +23,7 @@ module.exports = function(env, argv){
   }
   return {
     entry: {
-      main: './src/index.js'
+      main: ['@babel/polyfill', './src/index.js']
     },
     mode: argv.mode === 'development' ? 'development' : 'production', // development | production | none
     watch: argv.mode === 'development' && (process.env.npm_config_watch || argv.watch) ? true : false,
@@ -39,6 +40,7 @@ module.exports = function(env, argv){
       auxiliaryComment: 'Test Comment'
     },
     module: {
+      // noParse: /node_modules\/localforage\/dist\/localforage.js/,
       rules: [
         {
           test: /\.js$/,

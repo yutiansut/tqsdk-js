@@ -1,18 +1,29 @@
 
-# TQSDK - JS
+# TQSDK - JS 
 
-天勤 DIFF 协议的封装（JavaScript 语言版本）。
+天勤 [DIFF 协议 (https://www.shinnytech.com/diff/)](https://www.shinnytech.com/diff/) 的封装（JavaScript 语言版本）。
 
-DIFF 协议：[https://www.shinnytech.com/diff/](https://www.shinnytech.com/diff/)
+<p align="center">
+    <a href="https://www.shinnytech.com/diff" target="_blank" rel="noopener noreferrer">
+        <img width="100" src="./img/logo.png" alt="kuaiqi logo">
+    </a>
+</p>
 
-## Install 
+<p align="center">
+    <a href="https://www.npmjs.com/package/tqsdk"><img src="https://img.shields.io/npm/dw/tqsdk.svg" alt="Downloads"></a>
+   <a href="https://www.npmjs.com/package/tqsdk"><img src="https://img.shields.io/npm/v/tqsdk.svg" alt="Version"></a>
+  <a href="https://www.npmjs.com/package/tqsdk"><img src="https://img.shields.io/npm/l/tqsdk.svg" alt="License"></a>
+</p>
+
+## 1. 安装
+
 
 ### 方案一
 
 Html 文件添加
 
 ```html
-<script src="lib/tqsdk-x.x.x.js"></script>
+<script src="lib/tqsdk.js"></script>
 ```
 
 JavaScript 文件中可以直接使用：
@@ -37,21 +48,16 @@ import TQSDK from 'tqsdk'
 let tqsdk = new TQSDK({})
 ```
 
-## 如何使用
+## 2. 使用
 
-### 1. 初始化
+### 2.1 初始化
 
 ```js
-var tqsdk = new TQSDK({
-  reconnectInterval, // websocket 最大重连时间间隔 默认 3000
-  reconnectMaxTimes // websocket 最大重连次数 默认 5
-})
-
-// 全部使用默认参数
-var tqsdk = new TQSDK()
+// 建议全局只初始化一次，后面只使用实例 tqsdk
+const tqsdk = new TQSDK()
 ```
 
-### 2. on 事件监听 
+### 2.2 on 事件监听 
 
 ```js
 // 添加事件监听
@@ -66,59 +72,171 @@ tqsdk.off(eventName, cb)
 |eventName|cb 回调函数参数|事件触发说明|
 |---|---|---|
 |ready | | 收到合约基础数据|
-|rtn_brokers | (array) -- 期货公司列表 | 收到期货公司列表|
-|notify | (object) -- 单个通知对象 | 收到通知对象|
+|rtn_brokers | [] 期货公司列表 | 收到期货公司列表|
+|notify | {} 单个通知对象 | 收到通知对象|
 |rtn_data | | 数据更新（每一次数据更新触发）|
 |error | error | 发生错误(目前只有一种：合约服务下载失败)|
 
-### 3. 操作
+ :warning: 监听 `rtn_data` 事件，可以实时对行情数据变化作出响应。但是需要在相应组件 destory 的时候取消监听对应事件。
 
-#### subscribe_quote 订阅合约
+### 2.3 其他接口
 
-```js
-tqsdk.subscribe_quote([string|array]) 
+`TQSDK` 支持以下功能，详情参见 [API](#api)：
+
+* [x] 查询合约行情。
+* [x] 查询合约 K线图，Tick图，盘口报价。
+* [x] 登录期货交易账户。
+* [x] 查看账户资金、持仓记录、委托单记录。
+* [x] 多账户查询。
+* [x] 支持穿透视监管。
+* [ ] 查询历史结算单。
+
+## 3. API
+
++ subscribe_quote 订阅合约
+
+```
+function subscribe_quote (payload: string | array)
 ```
 
-#### set_chart 订阅图表
+example: 
 
 ```js
-tqsdk.set_chart([object]) 
+tqsdk.subscribe_quote('cu1901')
+
+tqsdk.subscribe_quote(['cu1901', 'au1906'])
+ 
 ```
 
-#### insert_order 下单
++ login 登录
 
-#### auto_insert_order 自动平昨平今
+```
+function login(payload: object) : null {}
 
-#### cancel_order 撤单
+payload = {
+    bid: string,
+    user_id: string,
+    password: string
+}
+```
 
-#### login 登录
++ add_account 添加期货账户信息
 
-#### confirm_settlement 确认结算单
+```
+function add_account(bid: string, user_id: string, password: string) : null
+```
+    
++ remove_account 删除期货账户信息
 
-#### transfer 银期转帐
+```
+function remove_account(bid: string, user_id: string, password?: string) : null
+```
 
-### 4. 获取数据 api
++ get_quote 获取合约详情
 
-#### get_account: ƒ get_account()
-#### get_account_id: ƒ get_account_id()
-#### get_accounts: ƒ get_accounts()
-#### get_by_path: ƒ get_by_path(_path)
-#### get_order: ƒ get_order(order_id)
-#### get_orders: ƒ get_orders()
-#### get_position: ƒ get_position(symbol)
-#### get_positions: ƒ get_positions() 
-#### get_quote: ƒ get_quote(symbol)
-#### get_quotes_by_input: ƒ get_quotes_by_input(_input)
-#### get_trades: ƒ get_trades()
-#### get_trading_day: ƒ get_trading_day()
-#### is_changed: ƒ is_changed(target, source)
-#### is_logined: ƒ is_logined()
+```
+function get_quote(symbol: string) : object
+```
 
-## 关于监听事件
++ get 获取数据
 
-监听 `rtn_data` 事件，可以实时对行情数据变化作出响应。但是需要在相应组件 destory 的时候取消监听对应事件。
+```
+function get(payload: object) : object
 
-### Vue Plugin
+{
+    // 交易 ['users', 'user', 'session', 'accounts', 'account', 'positions', 'position', 'orders', 'order', 'trades', 'trade']
+    // 行情 ['quotes', 'quote', 'ticks', 'klines', 'charts', 'chart']
+    name = 'users',
+    user_id = '', // 以下 name 有效 ['user', 'session', 'accounts', 'account', 'positions', 'position', 'orders', 'order', 'trades', 'trade']
+    currency = 'CNY', // 以下 name 有效 ['account']
+    symbol = '', // 以下 name 有效 ['position'] ['quote', 'ticks', 'klines']
+    order_id = '', // 以下 name 有效 ['order']
+    trade_id = '', // 以下 name 有效 ['trade']
+    chart_id = '', // 以下 name 有效 ['chart']
+    input = '', // 以下 name 有效 ['quotes']
+    duration = 0,  // 以下 name 有效 ['klines']
+}
+```
+
+|name|payload|
+|---|---|
+|'users' | `{name}` |
+|'user' | `{name, user_id}` |
+|'session' | `{name, user_id}` |
+|'accounts' | `{name, user_id}` |
+|'account' | `{name, user_id, currency}` |
+|'positions' | `{name, user_id}` |
+|'orders' | `{name, user_id}` |
+|'trades' | `{name, user_id}` |
+|'position' | `{name, user_id, symbol}` |
+|'order' | `{name, user_id, order_id}` |
+|'trade' | `{name, user_id, trade_id}` |
+|'quotes' | `{name, input}` |
+|'quote' | `{name, symbol}` |
+|'klines' | `{name, symbol, duration}` |
+|'ticks' | `{name, symbol}` |
+
++ get_by_path 根据路径获取数据
+
+```
+function get_by_path (path: string | array) : object
+```
+
++ set_chart 订阅图表
+
+```
+function set_chart (payload: object) : null
+```
+
++ get_quotes_by_input 根据输入返回合约集合
+
+```
+function get_quotes_by_input (_input: string) : object
+```
+
++ get_trading_day 获取当前交易日
+
+```
+function get_trading_day () : string
+```
++ is_changed 数据最近是否更新
+
+```
+function is_changed(target: string | object, source?: object)
+```
+
++ is_logined 是否登录成功
+
+```
+function is_logined(payload) : boolean
+payload = {
+    bid: string,
+    user_id: string
+}
+```
+
++ transfer 银期转帐
+
++ his_settlement 查询历史结算单
+
+```
+function his_settlement(payload) : null
+payload = {
+    bid: string,
+    user_id: string,
+    trading_day: number
+}
+```
+
++ insert_order 下单 <sup style="color:red;">deprecated</sup>
+
++ auto_insert_order 自动平昨平今 <sup style="color:red;">deprecated</sup>
+
++ cancel_order 撤单 <sup style="color:red;">deprecated</sup>
+
++ confirm_settlement 确认结算单 <sup style="color:red;">deprecated</sup>
+
+## Vue Plugin
 
 TQSDK - JS 封装为 Vue 插件，可以在组件中监听事件，不需要在单独取消监听。
 
